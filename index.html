@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>平行世界档案局 — 职业测算</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap');
+
+:root {
+  --green-glow: rgba(74,222,128,0.22);
+  --green-mid: #4ade80;
+  --green-deep: #16a34a;
+  --green-vivid: #22c55e;
+  --bg-base: #0b1f12;
+  --bg-card: rgba(12,50,25,0.62);
+  --border-green: rgba(74,222,128,0.22);
+  --border-green-hi: rgba(74,222,128,0.5);
+  --text-primary: #edfaf1;
+  --text-soft: rgba(200,240,215,0.78);
+  --text-muted: rgba(150,210,175,0.55);
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+
+body {
+  font-family:'Noto Sans SC',sans-serif;
+  background:#0b1f12;
+  min-height:100vh;
+  overflow-x:hidden;
+  color:var(--text-primary);
+}
+
+#app {
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse at 10% 20%, rgba(34,197,94,0.18) 0%,transparent 52%),
+    radial-gradient(ellipse at 88% 68%, rgba(16,185,129,0.14) 0%,transparent 50%),
+    radial-gradient(ellipse at 55% 5%, rgba(52,211,153,0.11) 0%,transparent 45%),
+    radial-gradient(ellipse at 30% 90%, rgba(22,163,74,0.09) 0%,transparent 42%),
+    linear-gradient(160deg,#0b1f12 0%,#0f2d18 35%,#112e1a 65%,#0b1f12 100%);
+  position:relative;
+}
+
+#app::before {
+  content:'';
+  position:fixed;inset:0;
+  background-image:radial-gradient(circle at 1px 1px,rgba(74,222,128,0.055) 1px,transparent 0);
+  background-size:28px 28px;
+  pointer-events:none;z-index:0;
+}
+
+.glass {
+  background:rgba(10,42,20,0.62);
+  backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  border:1px solid var(--border-green);
+  border-radius:20px;
+}
+
+.glass-sm {
+  background:rgba(10,42,20,0.48);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  border:1px solid rgba(74,222,128,0.14);
+  border-radius:14px;
+}
+
+.screen{display:none;}
+.screen.active{display:block;}
+
+.rune-badge {
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(74,222,128,0.12);
+  border:1px solid rgba(74,222,128,0.3);
+  border-radius:24px;padding:6px 16px;
+  font-size:11px;color:#4ade80;letter-spacing:3px;text-transform:uppercase;
+}
+
+.hero-title {
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(30px,8vw,52px);
+  font-weight:700;color:#fff;line-height:1.2;
+}
+.hero-title .accent{color:#4ade80;text-shadow:0 0 28px rgba(74,222,128,0.5);}
+
+/* Buttons */
+.start-btn {
+  display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,#16a34a,#059669);
+  color:#fff;border:none;border-radius:14px;
+  padding:15px 36px;font-size:16px;font-weight:600;
+  cursor:pointer;transition:all 0.25s;
+  box-shadow:0 4px 28px rgba(22,163,74,0.4),0 0 0 1px rgba(74,222,128,0.2);
+  letter-spacing:0.5px;font-family:'Noto Sans SC',sans-serif;
+}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(22,163,74,0.55),0 0 0 1px rgba(74,222,128,0.35);}
+
+.nav-btn {
+  flex:1;padding:13px;border-radius:13px;
+  font-size:15px;font-weight:600;cursor:pointer;transition:all 0.2s;
+  border:none;font-family:'Noto Sans SC',sans-serif;
+}
+.btn-ghost {
+  background:rgba(8,30,16,0.55);
+  border:1px solid rgba(74,222,128,0.2)!important;
+  color:rgba(160,210,175,0.65);
+}
+.btn-ghost:hover{background:rgba(22,163,74,0.12);color:#4ade80;}
+.btn-primary {
+  background:linear-gradient(135deg,#16a34a,#059669);
+  color:#fff;box-shadow:0 3px 18px rgba(22,163,74,0.32);
+}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 5px 24px rgba(22,163,74,0.5);}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed;}
+
+/* Progress */
+.progress-track{height:3px;background:rgba(74,222,128,0.12);border-radius:4px;overflow:hidden;}
+.progress-fill{height:100%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:4px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1);}
+
+/* Question */
+.q-text{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(17px,4vw,22px);
+  color:#edfaf1;font-weight:600;line-height:1.55;
+}
+
+/* Options */
+.option-btn {
+  display:flex;align-items:flex-start;gap:12px;width:100%;
+  background:rgba(8,35,16,0.52);
+  border:1px solid rgba(74,222,128,0.13);
+  border-radius:13px;padding:14px 16px;
+  cursor:pointer;transition:all 0.2s;text-align:left;
+  color:rgba(200,240,215,0.8);font-size:14px;line-height:1.55;
+  font-family:'Noto Sans SC',sans-serif;
+}
+.option-btn:hover{background:rgba(22,163,74,0.15);border-color:rgba(74,222,128,0.38);color:#edfaf1;transform:translateX(3px);}
+.option-btn.selected{background:rgba(22,163,74,0.2);border-color:rgba(74,222,128,0.62);color:#fff;box-shadow:0 0 0 1px rgba(74,222,128,0.12) inset;}
+
+.opt-check {
+  width:20px;height:20px;min-width:20px;
+  border-radius:6px;border:1.5px solid rgba(74,222,128,0.32);
+  display:flex;align-items:center;justify-content:center;
+  margin-top:1px;transition:all 0.2s;flex-shrink:0;
+}
+.option-btn.selected .opt-check{background:#16a34a;border-color:#16a34a;}
+.check-svg{display:none;}
+.option-btn.selected .check-svg{display:block;}
+
+/* Result */
+.result-name{
+  font-family:'Noto Serif SC',serif;
+  font-size:clamp(28px,7vw,44px);
+  font-weight:700;color:#fff;line-height:1.2;
+}
+.result-desc{font-size:15px;color:rgba(200,240,215,0.82);line-height:1.85;text-align:left;}
+.trait-tag{
+  display:inline-flex;
+  background:rgba(10,42,20,0.72);
+  border:1px solid rgba(74,222,128,0.22);
+  border-radius:20px;padding:5px 14px;
+  font-size:12px;color:rgba(160,225,185,0.82);
+}
+.divider-glow{width:56px;height:2px;background:linear-gradient(90deg,transparent,#4ade80,transparent);border-radius:2px;margin:0 auto;}
+
+/* Share action buttons */
+.action-btn {
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 20px;border-radius:12px;
+  font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;
+  font-family:'Noto Sans SC',sans-serif;border:none;
+}
+.action-save{background:linear-gradient(135deg,#16a34a,#059669);color:#fff;box-shadow:0 3px 16px rgba(22,163,74,0.32);}
+.action-save:hover{transform:translateY(-1px);box-shadow:0 5px 22px rgba(22,163,74,0.48);}
+.action-copy{background:rgba(10,42,20,0.6);border:1px solid rgba(74,222,128,0.28)!important;color:#4ade80;}
+.action-copy:hover{background:rgba(22,163,74,0.12);}
+
+/* Comment board - floating */
+.comment-float {
+  position:fixed;
+  bottom:20px;right:16px;
+  width:min(360px, calc(100vw - 32px));
+  max-height:300px;
+  z-index:200;
+  transition:all 0.35s cubic-bezier(0.4,0,0.2,1);
+  transform-origin:bottom right;
+}
+.comment-float.collapsed{transform:scale(0.88) translateY(10px);opacity:0;pointer-events:none;}
+.comment-float-inner{
+  background:rgba(8,38,18,0.82);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(74,222,128,0.25);
+  border-radius:18px;overflow:hidden;
+}
+.comment-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;
+  border-bottom:1px solid rgba(74,222,128,0.1);
+  cursor:pointer;user-select:none;
+}
+.comment-header-title{font-size:12px;color:#4ade80;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;}
+.comment-list{
+  max-height:180px;overflow-y:auto;padding:10px 12px;
+  scrollbar-width:thin;scrollbar-color:rgba(74,222,128,0.2) transparent;
+}
+.comment-list::-webkit-scrollbar{width:4px;}
+.comment-list::-webkit-scrollbar-track{background:transparent;}
+.comment-list::-webkit-scrollbar-thumb{background:rgba(74,222,128,0.2);border-radius:2px;}
+
+.comment-item{
+  display:flex;gap:8px;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid rgba(74,222,128,0.06);
+}
+.comment-item:last-child{border-bottom:none;}
+.comment-career-badge{
+  flex-shrink:0;font-size:14px;line-height:1;
+  width:28px;height:28px;border-radius:8px;
+  background:rgba(22,163,74,0.15);
+  border:1px solid rgba(74,222,128,0.18);
+  display:flex;align-items:center;justify-content:center;
+}
+.comment-meta{font-size:11px;color:rgba(74,222,128,0.6);margin-bottom:3px;}
+.comment-text{font-size:13px;color:rgba(200,240,215,0.82);line-height:1.5;}
+
+/* Toggle bubble when collapsed */
+.comment-bubble {
+  position:fixed;bottom:20px;right:16px;
+  width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg,#16a34a,#059669);
+  border:none;cursor:pointer;
+  box-shadow:0 4px 20px rgba(22,163,74,0.45);
+  display:flex;align-items:center;justify-content:center;
+  z-index:199;transition:all 0.2s;
+  font-size:18px;
+}
+.comment-bubble:hover{transform:scale(1.08);}
+.comment-bubble.hidden{display:none;}
+
+/* Q16 — final dream job question */
+.dream-textarea {
+  width:100%;min-height:90px;
+  background:rgba(8,35,16,0.52);
+  border:1px solid rgba(74,222,128,0.2);
+  border-radius:13px;padding:14px 16px;
+  color:#edfaf1;font-size:14px;line-height:1.6;
+  font-family:'Noto Sans SC',sans-serif;
+  resize:none;outline:none;transition:border-color 0.2s;
+}
+.dream-textarea:focus{border-color:rgba(74,222,128,0.5);}
+.dream-textarea::placeholder{color:rgba(150,210,175,0.4);}
+
+/* Save panel overlay */
+.overlay {
+  position:fixed;inset:0;z-index:500;
+  background:rgba(5,18,10,0.82);
+  backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+}
+.overlay.active{opacity:1;pointer-events:all;}
+.overlay-panel{
+  background:rgba(8,38,18,0.95);
+  border:1px solid rgba(74,222,128,0.28);
+  border-radius:20px;padding:28px 24px;
+  width:100%;max-width:440px;
+  transform:translateY(16px);transition:transform 0.3s;
+}
+.overlay.active .overlay-panel{transform:translateY(0);}
+
+/* Result card for screenshot */
+#result-card-capture {
+  background:linear-gradient(160deg,#0b2414 0%,#0f2e19 50%,#081a0e 100%);
+  border-radius:24px;padding:36px 28px;text-align:center;
+  border:1px solid rgba(74,222,128,0.28);
+  position:relative;overflow:hidden;
+}
+#result-card-capture::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 30% 20%,rgba(34,197,94,0.16) 0%,transparent 60%),
+             radial-gradient(ellipse at 75% 80%,rgba(16,185,129,0.1) 0%,transparent 55%);
+  pointer-events:none;
+}
+
+/* Compat block */
+.compat-block {
+  background:rgba(251,191,36,0.07);
+  border:1px solid rgba(251,191,36,0.22);
+  border-radius:16px;
+  padding:20px 22px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+.compat-block::after {
+  content:'♡';
+  position:absolute;right:14px;top:8px;
+  font-size:52px;opacity:0.055;line-height:1;pointer-events:none;
+}
+.compat-eyebrow {
+  font-size:10px;color:rgba(251,191,36,0.55);
+  letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;
+}
+.compat-partner-row {
+  display:flex;align-items:center;gap:10px;margin-bottom:12px;
+}
+.compat-partner-icon {
+  width:38px;height:38px;border-radius:10px;
+  background:rgba(251,191,36,0.12);
+  border:1px solid rgba(251,191,36,0.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+}
+.compat-partner-name {
+  font-family:'Noto Serif SC',serif;
+  font-size:17px;font-weight:700;color:#fbbf24;line-height:1.2;
+}
+.compat-partner-sub {
+  font-size:11px;color:rgba(251,191,36,0.5);margin-top:2px;
+}
+.compat-text {
+  font-size:13.5px;color:rgba(255,235,180,0.72);line-height:1.82;
+}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+@keyframes floatUp{0%{transform:translateY(110vh)scale(0.5);opacity:0;}10%{opacity:1;}90%{opacity:0.4;}100%{transform:translateY(-40px)scale(1.2);opacity:0;}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+@keyframes pulse-glow{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.3);}50%{box-shadow:0 0 0 6px rgba(74,222,128,0);}}
+
+.fade-in{animation:fadeUp 0.45s ease forwards;}
+.slide-in{animation:slideIn 0.35s ease forwards;}
+
+/* Particles */
+.particles-wrap{position:fixed;inset:0;pointer-events:none;z-index:1;overflow:hidden;}
+.particle{position:absolute;border-radius:50%;background:rgba(74,222,128,0.5);animation:floatUp linear infinite;}
+
+/* Hero features */
+.hero-feat{display:flex;align-items:flex-start;gap:14px;padding:14px 18px;background:rgba(8,38,16,0.42);border:1px solid rgba(74,222,128,0.11);border-radius:13px;margin-bottom:10px;}
+.hero-feat-icon{font-size:22px;line-height:1;margin-top:1px;}
+.hero-feat-title{font-size:13px;font-weight:600;color:#4ade80;margin-bottom:3px;}
+.hero-feat-sub{font-size:12.5px;color:rgba(155,215,178,0.62);line-height:1.5;}
+
+/* Copied toast */
+.toast{
+  position:fixed;top:24px;left:50%;transform:translateX(-50%) translateY(-10px);
+  background:rgba(22,163,74,0.92);color:#fff;
+  padding:10px 22px;border-radius:30px;font-size:14px;font-weight:600;
+  z-index:9999;opacity:0;transition:all 0.3s;pointer-events:none;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+@media(max-width:480px){
+  .content-wrap{padding:24px 14px 36px;}
+  .q-card-inner{padding:20px 18px;}
+  .result-actions{flex-direction:column;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="particles-wrap" id="particles"></div>
+  <div class="toast" id="toast">已复制链接 ✓</div>
+
+  <div class="content-wrap" style="position:relative;z-index:10;max-width:640px;margin:0 auto;padding:36px 20px 48px;">
+
+    <!-- ═══════════ SCREEN: INTRO ═══════════ -->
+    <div id="screen-intro" class="screen active fade-in">
+      <div style="margin-bottom:24px;"><span class="rune-badge">✦ 平行世界档案局 ✦</span></div>
+      <h1 class="hero-title" style="margin-bottom:16px;">
+        你在<span class="accent">平行宇宙</span><br>里做什么工作？
+      </h1>
+      <p style="font-size:15px;color:rgba(180,235,200,0.72);line-height:1.85;margin-bottom:32px;">
+        维度测算仪显示，在另一个时间线里，<br>你有一份这个世界从未见过的职业。<br>
+        15 道探索，校准你的宇宙坐标。
+      </p>
+      <div style="margin-bottom:30px;">
+        <div class="hero-feat">
+          <div class="hero-feat-icon">🌀</div>
+          <div><div class="hero-feat-title">穿越维度的深度测算</div><div class="hero-feat-sub">15 道多维探索题，单选 / 多选混合</div></div>
+        </div>
+        <div class="hero-feat">
+          <div class="hero-feat-icon">💬</div>
+          <div><div class="hero-feat-title">所有旅行者的漂浮留言</div><div class="hero-feat-sub">每一个答卷者都会留下一条来自平行世界的消息</div></div>
+        </div>
+        <div class="hero-feat">
+          <div class="hero-feat-icon">📸</div>
+          <div><div class="hero-feat-title">生成专属宇宙档案图</div><div class="hero-feat-sub">保存并分享你的平行世界身份证</div></div>
+        </div>
+      </div>
+      <button class="start-btn" onclick="startTest()">开启维度测算 ✦</button>
+    </div>
+
+    <!-- ═══════════ SCREEN: QUIZ ═══════════ -->
+    <div id="screen-quiz" class="screen">
+      <div style="margin-bottom:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:11px;color:#4ade80;letter-spacing:2px;text-transform:uppercase;">✦ 维度校准中</span>
+          <span style="font-size:13px;color:rgba(150,210,175,0.55);" id="q-count">1 / 15</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:6.67%"></div></div>
+      </div>
+      <div class="glass q-card-inner fade-in" id="q-card" style="padding:28px;margin-bottom:18px;">
+        <div style="font-size:11px;color:#4ade80;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;" id="q-num">问题 01</div>
+        <div class="q-text" id="q-text" style="margin-bottom:6px;"></div>
+        <div style="font-size:12px;color:rgba(100,175,135,0.52);margin-bottom:22px;" id="q-hint"></div>
+        <div style="display:grid;gap:10px;" id="options-grid"></div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button class="nav-btn btn-ghost" id="btn-prev" onclick="prevQ()" style="max-width:120px;flex:none;border:1px solid rgba(74,222,128,0.18);">← 上一题</button>
+        <button class="nav-btn btn-primary" id="btn-next" onclick="nextQ()" disabled>下一题 →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════ SCREEN: DREAM QUESTION (Q16) ═══════════ -->
+    <div id="screen-dream" class="screen">
+      <div style="margin-bottom:22px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="font-size:11px;color:#4ade80;letter-spacing:2px;text-transform:uppercase;">✦ 最后一问</span>
+          <span style="font-size:13px;color:rgba(150,210,175,0.55);">16 / 16</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:100%"></div></div>
+      </div>
+      <div class="glass fade-in" style="padding:28px;margin-bottom:18px;">
+        <div style="font-size:11px;color:#4ade80;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:10px;">问题 16</div>
+        <div class="q-text" style="margin-bottom:8px;">你之前有想象过自己是别的幻想职业吗？</div>
+        <div style="font-size:12px;color:rgba(100,175,135,0.52);margin-bottom:22px;">写下任何东西——它会出现在所有旅行者能看见的漂浮留言板上</div>
+        <textarea class="dream-textarea" id="dream-input" placeholder="比如：「我一直觉得自己应该是某个遗忘图书馆的守门人…」" maxlength="120"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:6px;">
+          <span style="font-size:11px;color:rgba(100,170,130,0.45);" id="dream-counter">0 / 120</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button class="nav-btn btn-ghost" onclick="goBackToDream()" style="max-width:120px;flex:none;border:1px solid rgba(74,222,128,0.18);">← 上一题</button>
+        <button class="nav-btn btn-primary" onclick="submitDreamAndResult()">揭晓我的职业 ✦</button>
+      </div>
+      <div style="text-align:center;margin-top:12px;">
+        <button onclick="submitDreamAndResult()" style="background:none;border:none;font-size:13px;color:rgba(150,210,175,0.45);cursor:pointer;font-family:'Noto Sans SC',sans-serif;">跳过，直接揭晓 →</button>
+      </div>
+    </div>
+
+    <!-- ═══════════ SCREEN: RESULT ═══════════ -->
+    <div id="screen-result" class="screen">
+      <div style="text-align:center;margin-bottom:22px;">
+        <span class="rune-badge">✦ 档案已解密 ✦</span>
+      </div>
+
+      <!-- Capture zone -->
+      <div id="result-card-capture" style="margin-bottom:16px;">
+        <div style="position:relative;z-index:1;">
+          <div style="font-size:72px;line-height:1;margin-bottom:14px;" id="r-icon">🌙</div>
+          <div style="display:inline-block;background:rgba(74,222,128,0.12);border:1px solid rgba(74,222,128,0.3);border-radius:20px;padding:4px 14px;font-size:11px;color:#4ade80;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:16px;">平行世界职业</div>
+          <div class="result-name" style="margin-bottom:22px;" id="r-name"></div>
+          <div class="divider-glow" style="margin-bottom:22px;"></div>
+          <div class="result-desc" id="r-desc" style="margin-bottom:22px;"></div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;" id="r-traits"></div>
+          <div style="margin-top:24px;padding-top:18px;border-top:1px solid rgba(74,222,128,0.12);display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:10px;color:rgba(100,170,130,0.4);letter-spacing:2px;text-transform:uppercase;">平行世界档案局</span>
+            <span style="font-size:10px;color:rgba(100,170,130,0.4);" id="r-date"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compat block -->
+      <div class="compat-block fade-in" id="compat-block" style="margin-bottom:16px;">
+        <div class="compat-eyebrow">灵魂互补关系</div>
+        <div class="compat-partner-row">
+          <div class="compat-partner-icon" id="r-compat-icon"></div>
+          <div>
+            <div class="compat-partner-name" id="r-compat-name"></div>
+            <div class="compat-partner-sub">与你最能产生化学反应的平行世界存在</div>
+          </div>
+        </div>
+        <div class="compat-text" id="r-compat-text"></div>
+      </div>
+
+      <!-- Action row -->
+      <div class="result-actions" style="display:flex;gap:10px;margin-bottom:12px;">
+        <button class="action-btn action-save" onclick="openSavePanel()" style="flex:1;">
+          <span>📸</span><span>保存宇宙档案</span>
+        </button>
+        <button class="action-btn action-copy" onclick="copyLink()" style="flex:1;border:1px solid rgba(74,222,128,0.28)!important;">
+          <span>🔗</span><span>复制链接</span>
+        </button>
+      </div>
+      <button onclick="resetTest()" style="width:100%;padding:13px;border-radius:13px;background:transparent;border:1px solid rgba(74,222,128,0.2);color:rgba(155,215,178,0.65);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;font-family:'Noto Sans SC',sans-serif;" onmouseover="this.style.background='rgba(22,163,74,0.1)';this.style.color='#4ade80'" onmouseout="this.style.background='transparent';this.style.color='rgba(155,215,178,0.65)'">↺ 重新测算命运</button>
+    </div>
+
+  </div><!-- /content-wrap -->
+</div><!-- /app -->
+
+<!-- ═══════════ FLOATING COMMENT PANEL ═══════════ -->
+<button class="comment-bubble hidden" id="comment-bubble" onclick="toggleComments()">💬</button>
+<div class="comment-float collapsed" id="comment-float">
+  <div class="comment-float-inner">
+    <div class="comment-header" onclick="toggleComments()">
+      <span class="comment-header-title">🌀 旅行者留言 <span id="comment-count-badge" style="color:rgba(74,222,128,0.55)">0</span></span>
+      <span style="font-size:16px;color:rgba(74,222,128,0.5);" id="float-toggle-icon">✕</span>
+    </div>
+    <div class="comment-list" id="comment-list"></div>
+  </div>
+</div>
+
+<!-- ═══════════ SAVE PANEL OVERLAY ═══════════ -->
+<div class="overlay" id="save-overlay" onclick="closeSaveOverlayOutside(event)">
+  <div class="overlay-panel" style="position:relative;">
+    <button onclick="closeSavePanel()" style="position:absolute;top:14px;right:16px;background:none;border:none;color:rgba(150,210,175,0.5);font-size:20px;cursor:pointer;line-height:1;">✕</button>
+    <div style="font-size:11px;color:#4ade80;letter-spacing:2.5px;text-transform:uppercase;margin-bottom:18px;">📸 保存宇宙档案</div>
+
+    <!-- Mini preview -->
+    <div style="background:rgba(5,20,10,0.6);border:1px solid rgba(74,222,128,0.15);border-radius:14px;padding:16px;margin-bottom:20px;text-align:center;">
+      <div style="font-size:36px;margin-bottom:8px;" id="save-icon">🌙</div>
+      <div style="font-family:'Noto Serif SC',serif;font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;" id="save-name"></div>
+      <div style="font-size:11px;color:rgba(100,175,135,0.5);letter-spacing:1px;">平行世界档案局</div>
+    </div>
+
+    <div style="display:grid;gap:10px;">
+      <button class="action-btn action-save" onclick="doSaveImage()" style="width:100%;justify-content:center;">
+        <span>⬇️</span><span>下载为图片</span>
+      </button>
+      <button class="action-btn action-copy" onclick="copyLink();closeSavePanel();" style="width:100%;justify-content:center;border:1px solid rgba(74,222,128,0.28)!important;">
+        <span>🔗</span><span>复制分享链接</span>
+      </button>
+    </div>
+
+    <div style="margin-top:16px;padding:14px;background:rgba(5,25,12,0.5);border:1px solid rgba(74,222,128,0.1);border-radius:12px;">
+      <div style="font-size:11px;color:rgba(74,222,128,0.6);margin-bottom:6px;letter-spacing:1px;">分享语</div>
+      <div style="font-size:13px;color:rgba(200,240,215,0.75);line-height:1.6;" id="share-text"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ─── DATA ─── */
+const questions=[
+  {text:"深夜里，你最常出现在哪种梦境？",hint:"可多选",multi:true,options:[
+    {text:"飞翔在古老城市的屋顶，俯瞰一切",tags:["自由","观察"]},
+    {text:"在图书馆迷宫里寻找一本神秘典籍",tags:["探索","知识"]},
+    {text:"与陌生人展开一场重要谈判",tags:["交涉","影响"]},
+    {text:"修理某台巨大而复杂的机器",tags:["修复","逻辑"]}
+  ]},
+  {text:"如果你能拥有一种超自然感知，你选择？",hint:"单选",multi:false,options:[
+    {text:"感受物品背后主人的记忆与情感",tags:["情感","过去"]},
+    {text:"预知未来三分钟内将发生的事",tags:["时间","直觉"]},
+    {text:"辨别一个人话语中的每一分谎言",tags:["洞察","真相"]},
+    {text:"瞬间学会任何语言，包括已死语言",tags:["语言","文明"]}
+  ]},
+  {text:"你面前有四扇门，背后分别是……",hint:"选择你最想推开的，可多选",multi:true,options:[
+    {text:"一片没有人类踏足过的原始星球",tags:["未知","探索"]},
+    {text:"100年前这座城市同一时刻的场景",tags:["历史","时间"]},
+    {text:"某个已消失文明的最后一个清晨",tags:["文明","考古"]},
+    {text:"你自己内心深处最隐秘的角落",tags:["内省","灵魂"]}
+  ]},
+  {text:"完成一项重要任务时，你最不可或缺的工具是？",hint:"单选",multi:false,options:[
+    {text:"一本精密的推理笔记与时间线图表",tags:["逻辑","记录"]},
+    {text:"与陌生人建立信任的能力",tags:["交涉","影响"]},
+    {text:"在绝境中找到创意出口的直觉",tags:["创造","适应"]},
+    {text:"对自然与宇宙规律的深刻理解",tags:["科学","宇宙"]}
+  ]},
+  {text:"如果你是一种天气，你是？",hint:"可多选",multi:true,options:[
+    {text:"暴风雨前夕——充满能量，引而不发",tags:["潜力","控制"]},
+    {text:"北方的极光——稀有，美丽，不可预测",tags:["神秘","独特"]},
+    {text:"多云转晴——过渡期，经历后更明朗",tags:["成长","转化"]},
+    {text:"星夜无云——清醒，深远，静中有力",tags:["智慧","观察"]}
+  ]},
+  {text:"宴会上你更可能做什么？",hint:"单选",multi:false,options:[
+    {text:"悄悄绘制整个房间人际关系的草图",tags:["观察","社会"]},
+    {text:"在角落研究建筑结构和隐藏细节",tags:["探索","空间"]},
+    {text:"成为连接不同圈子的关键节点",tags:["交涉","影响"]},
+    {text:"寻找那个同样不想在这里的人交谈",tags:["共鸣","孤独"]}
+  ]},
+  {text:"你最能接受的代价是？",hint:"可多选",multi:true,options:[
+    {text:"必须永远保守一个无法言说的秘密",tags:["秘密","孤独"]},
+    {text:"每次使用能力，都会失去一段短暂记忆",tags:["时间","代价"]},
+    {text:"你了解的越多，就越难与普通人相处",tags:["知识","疏离"]},
+    {text:"你改变世界，但没有人知道是你做的",tags:["幕后","奉献"]}
+  ]},
+  {text:"古老的神殿里有一道铭文：「____是世界的锚点」",hint:"你认为空白处应该填入什么？单选",multi:false,options:[
+    {text:"被遗忘的故事",tags:["历史","记忆"]},
+    {text:"未被解读的信号",tags:["信号","宇宙"]},
+    {text:"未曾实现的梦",tags:["梦境","可能性"]},
+    {text:"不完美的修复",tags:["修复","现实"]}
+  ]},
+  {text:"你的工作场所最可能是？",hint:"可多选",multi:true,options:[
+    {text:"漂浮于云端的玻璃观测站",tags:["观察","隔绝"]},
+    {text:"深埋地下的古代遗迹改造成的工作室",tags:["历史","隐秘"]},
+    {text:"人流密集的城市中心，伪装成普通店铺",tags:["伪装","交涉"]},
+    {text:"无处不在——因为工作就是旅途本身",tags:["自由","探索"]}
+  ]},
+  {text:"你与时间的关系更像？",hint:"单选",multi:false,options:[
+    {text:"你修复时间线上的小裂缝，防止历史坍塌",tags:["时间","修复"]},
+    {text:"你在时间中逆向航行，挖掘被遗忘的事",tags:["历史","时间"]},
+    {text:"你总是活在别人的时间里，感知他们的当下",tags:["情感","当下"]},
+    {text:"你研究时间本身的语法结构",tags:["宇宙","逻辑"]}
+  ]},
+  {text:"你更倾向于用哪种方式守护珍贵的东西？",hint:"可多选",multi:true,options:[
+    {text:"将其藏于最意想不到的地方",tags:["秘密","策略"]},
+    {text:"让更多人知道它的存在与价值",tags:["传播","影响"]},
+    {text:"不断修复与维护，让它永不腐朽",tags:["修复","奉献"]},
+    {text:"将其转化为别人心中的一种感受",tags:["情感","转化"]}
+  ]},
+  {text:"你最不能忍受的事情是？",hint:"单选",multi:false,options:[
+    {text:"一个重要的故事因为无人记录而消失",tags:["记忆","历史"]},
+    {text:"宇宙间存在信号，却没有人愿意去倾听",tags:["宇宙","孤独"]},
+    {text:"明明可以被修复的关系，被轻易放弃",tags:["修复","情感"]},
+    {text:"已知的边界划定了想象力的终点",tags:["探索","可能性"]}
+  ]},
+  {text:"在平行世界里，你更可能拥有哪种追随者？",hint:"可多选",multi:true,options:[
+    {text:"那些在边界游走、被主流世界遗忘的人",tags:["边缘","共鸣"]},
+    {text:"渴望知识却找不到门路的年轻探索者",tags:["探索","知识"]},
+    {text:"同样在秘密中工作的无名守护者",tags:["幕后","秘密"]},
+    {text:"来自不同宇宙的、彼此陌生的旅行者",tags:["跨界","自由"]}
+  ]},
+  {text:"如果你的职业有一句从业格言，最像哪句？",hint:"单选",multi:false,options:[
+    {text:"「世界从未崩塌，只是你不知道我们做了什么」",tags:["幕后","修复"]},
+    {text:"「没有什么真正失去，只要你还记得去找」",tags:["记忆","探索"]},
+    {text:"「信号穿越一切，我只是那个静静等待的耳朵」",tags:["宇宙","倾听"]},
+    {text:"「梦是唯一诚实的地方，我只是个诚实的商人」",tags:["梦境","真相"]}
+  ]},
+  {text:"测试结束前，你对自己平行世界职业的最后预感是？",hint:"可多选",multi:true,options:[
+    {text:"我应该与时间或记忆有关",tags:["时间","记忆"]},
+    {text:"我在某处独自守护着不为人知的秘密",tags:["秘密","守护"]},
+    {text:"我在边界与裂缝中工作，连接两个世界",tags:["边界","跨界"]},
+    {text:"我的工作与星空、宇宙或古老文明有关",tags:["宇宙","文明"]}
+  ]}
+];
+
+const careers=[
+  {name:"梦境走私者",icon:"🌙",desc:"你在清醒与睡眠的边界运营着一条秘密航线。人们最深处的记忆、欲望，甚至那些被脑海审查删除的梦，都经由你的手在黑市流通。你不出售幻觉——你出售真相中最勇敢的部分。每一场梦都是一宗案件，每一个委托人都不知道他们找到的到底是什么。",traits:["边界游走者","情感走私商","禁忌守护者"],tags:["梦境","秘密","情感","边界","真相","孤独"],compatName:"时间修补匠",compatIcon:"⏱️",compat:"梦境走私者活在情感的深渊里，凭直觉和感知行事，常常把自己搞得一团混乱。而时间修补匠性格里有种沉稳的秩序感——他们不会试图理解你那些说不清楚的感受，但会默默帮你把散落的碎片按时间线归位。你给他们世界里的柔软与异常，他们给你一个能落脚的地方。不是谁拯救谁，是两种混乱找到了彼此的稳定点。"},
+  {name:"时间修补匠",icon:"⏱️",desc:"你的工作台上摆满了泛黄的时间碎片。历史偶尔会裂出细缝——一个不该发生的巧合，一段被篡改的记忆——而你是那个凌晨三点悄悄把它缝回去的人。世界从未崩塌，只是你太低调，从不让人知道你做了什么。",traits:["时间线外科医生","悄无声息的修复者","历史的私人裁缝"],tags:["时间","修复","秘密","幕后","记忆","逻辑"],compatName:"情绪勘探师",compatIcon:"💠",compat:"时间修补匠太习惯压抑自己的感受了——毕竟修复别人的裂缝时，容不下自己的颤抖。情绪勘探师是少数能在你开口之前就感知到你状态异常的人。他们不会追问，只是安静地在你旁边坐着，像一台精准的气压计。你帮他们的世界维持秩序，他们帮你把那些「还好」背后的疲倦测量出来，然后认真对待它。"},
+  {name:"星际考古学家",icon:"🪐",desc:"你在宇宙的垃圾场里挖掘灭绝文明的遗物。那些星球上的最后一首歌、最后一行代码、最后一次祈祷，都被你小心封存在防锈的档案盒里。你相信，任何文明都值得一个见证者，哪怕那个见证者只有你一个人。",traits:["文明遗孤的倾听者","宇宙档案员","无声的悼念者"],tags:["宇宙","文明","历史","探索","考古","孤独"],compatName:"可能性收割者",compatIcon:"🌱",compat:"星际考古学家专注于已经消逝的一切，他们最深的恐惧是「存在过，却没有人知道」。可能性收割者恰好相反——他们痴迷于那些还没发生的事，收集所有未被选择的岔路。两个人在一起时，过去与未来在对话：你让他们知道每一个选择都会留下痕迹，他们让你相信消失不是终点，那些可能性还在别处蓬勃生长。"},
+  {name:"情绪勘探师",icon:"💠",desc:"你用特制仪器探测人群中涌动的集体情绪，绘制感受的地质图。在战争爆发的36小时前，你就能感知到那股低频震动；在城市陷入寂静的某个夜晚，你测到了集体遗忘的前兆。你的报告从不被相信，直到一切都已发生。",traits:["感受地质学家","情绪预报员","隐形心理测量师"],tags:["情感","观察","预见","社会","洞察","直觉"],compatName:"平行世界外交官",compatIcon:"🌐",compat:"情绪勘探师感知到的东西太准确，以至于常常陷入「我知道但我无能为力」的困境。平行世界外交官则是那种能把感知转化为行动的人——他们有能力坐到谈判桌前，把你感知到的震荡转化为可以被处理的局面。你们是探测系统和行动系统的完美搭档：你负责提前感知哪里有裂缝，他们负责在裂缝变成深渊之前谈出一个协议。"},
+  {name:"语言考古学家",icon:"📜",desc:"已死的语言不是真的死了，它们只是在等待一个会听的人。你能从刻在石头里的一个字，还原出整个文明的呼吸节律。你的每一次破译，都是让一个世界重新说话。据说你正在研究一种没有名字的语言——它属于一个从未存在过的文明。",traits:["沉默文明的代言人","跨时代翻译官","语言的最后掌灯人"],tags:["语言","历史","文明","知识","沟通","文字"],compatName:"幽灵城市规划师",compatIcon:"🏙️",compat:"语言考古学家复活的是消失文明的声音，幽灵城市规划师规划的是消失城市的未来。你们都爱上了一些不存在的事物，并且愿意为它们认真工作。在一起时，你负责还原那个城市里的人曾经说过什么，他们负责构想那个城市下一个世纪会建造什么。这是一种跨越时间的合作，也是两个孤独的人找到了共同爱着同一片废墟的理由。"},
+  {name:"平行世界外交官",icon:"🌐",desc:"你穿梭于不同时间线之间，协调那些因蝴蝶效应而互相干涉的宇宙。你懂得18种维度的外交礼仪，也曾代表一整条时间线在多维度峰会上签下和平协议。最难的谈判从来不是在会议室——而是在时间的边缘，与即将消失的世界谈条件。",traits:["维度间谈判专家","宇宙宪法起草者","蝴蝶效应仲裁员"],tags:["交涉","跨界","影响","宇宙","和平","策略"],compatName:"宇宙孤本图书管理员",compatIcon:"📚",compat:"平行世界外交官总在谈判桌上，他们擅长倾听所有人的立场，却极少有人真正了解他们自己的立场是什么。宇宙孤本图书管理员是天生的倾听者和见证者——他们记录一切存在过的事物，从不评判。外交官可以在图书管理员面前卸下那套周旋的壳，说一些不需要外交辞令的话。而图书管理员那浩如烟海的知识，也是外交官谈判桌上最好的底气。"},
+  {name:"记忆建筑师",icon:"🏛️",desc:"你设计的不是房子，而是记忆的空间结构。失去记忆的人来找你，你重建他们遗忘的场景——某个巷口的光线，某次对话的气味，某个清晨的温度。你相信，找回一段记忆，就是找回一个人的一部分身份。",traits:["遗忘症专科设计师","情感空间的重建者","记忆博物馆馆长"],tags:["记忆","建筑","情感","修复","过去","空间"],compatName:"濒危感受保育员",compatIcon:"🌿",compat:"记忆建筑师重建的是具体的场景，而濒危感受保育员保存的是那些场景里流动的感受本身。两个人都在对抗遗忘，只是角度不同。你负责搭建那个房间，他们负责往房间里注入空气和温度。合作起来，你们能做到单独做不到的事——让一段记忆不只是被想起来，而是真的被重新活一次。"},
+  {name:"宇宙信号翻译官",icon:"📡",desc:"宇宙从未停止发送信息，只是人类忙于噪音而忘了倾听。你识别那些穿越百亿光年的微弱呼叫，将其解码为语言或图像。你最近刚刚破译了一段来自2.3亿年前某颗恒星的道别，内容只有一个词：「继续」。",traits:["星际通讯解码员","宇宙语言学家","孤独信号的见证者"],tags:["宇宙","信号","倾听","知识","科学","孤独"],compatName:"情绪建筑师",compatIcon:"🎭",compat:"宇宙信号翻译官擅长解读来自远方的信号，却常常对身边人的情绪状态后知后觉——毕竟宇宙的频道太多，近处的细节反而容易被忽略。情绪建筑师是那种能把一个空间的情感密度精确设计的人，对人际场域的感知极为敏锐。当你沉浸在星际频道里无法自拔，他们会帮你调低噪音、识别信号中真正重要的部分。而你对宏大事物的感知，也让他们的设计有了更辽阔的参照系。"},
+  {name:"幽灵城市规划师",icon:"🏙️",desc:"你专门为消失的城市做未来规划。那些被遗弃的、被淹没的、甚至从未存在过的城市——你为它们设计下一百年。没有人知道这些规划会不会被用到，但你坚持认为，一个地方值得被想象，就像一个人值得被记住。",traits:["虚空空间的未来学家","已消失城市的代言人","无用的伟大规划者"],tags:["历史","可能性","文明","空间","记忆","未知"],compatName:"记忆建筑师",compatIcon:"🏛️",compat:"幽灵城市规划师规划那些消失的城市，记忆建筑师重建人们遗忘的场景。你们同样深爱废墟，同样相信「值得被记住」是一件严肃的事。规划师给出的是宏观蓝图，建筑师填充的是细节温度——某条街道的宽度，某扇窗透进来的光，某个广场在傍晚的声音。合作起来，你们能让一座消失的城市重新有骨有肉，有过去也有未来。"},
+  {name:"暗物质艺术家",icon:"✨",desc:"你用宇宙中看不见的物质创作装置艺术。你的展览从未被任何人看见，但所有参观者都感到一种无法解释的情绪变化。你说这叫「被感知但不被看见」，那是你认为艺术最诚实的形态。你最近的作品让三个陌生人在展览后相爱了。",traits:["不可见的创造者","情绪波场雕刻师","暗宇宙美学家"],tags:["创造","艺术","神秘","情感","独特","宇宙"],compatName:"宇宙信号翻译官",compatIcon:"📡",compat:"暗物质艺术家创造的是无法被眼睛直接捕捉的体验，宇宙信号翻译官则专门接收那些没有人在听的微弱频率。你们都活在一种「明明存在，却极难被感知」的处境里，有一种只有彼此才懂的孤独。当艺术家创作出某件作品，翻译官往往是第一个真正感知到它意图的人——不是因为懂艺术，而是因为他们生来就在听那些别人听不见的声音。"},
+  {name:"历史错误修订员",icon:"📖",desc:"不是篡改历史，而是找出那些被意外写错的段落——一场本不该发生的战争，一段被误传百年的传说——然后小心翼翼地订正。你的工作需要极大的克制，因为你知道每一笔改动都有代价，而代价总是由某个无辜的人承担。",traits:["历史的校对者","谨慎的时间编辑","真相的守门人"],tags:["历史","修复","逻辑","真相","责任","记录"],compatName:"亡灵语言学家",compatIcon:"🦋",compat:"历史错误修订员修订的是文字层面的错误，亡灵语言学家感知的是那些错误背后遗留的情感残影。一个修订历史，一个听见历史在哭泣。修订员需要亡灵语言学家提醒他们，有些错误之所以被写下来，是因为当时的人太痛了，痛到只能把真相藏在错误里。而语言学家需要修订员帮他们确认：你听见的那道声音，是否真的存在过？"},
+  {name:"亡灵语言学家",icon:"🦋",desc:"那些已经离开的人，有时仍然在用某种频率说话。你能感知这种频率，并将其转化为普通语言。你不传递彼岸的消息——你翻译的只是遗留在这个世界里的情感残影，那些未说出口的话，那些最后时刻的心跳。",traits:["情感残影解读者","遗言的最后翻译者","两界之间的通讯员"],tags:["灵魂","情感","边界","语言","共鸣","过去"],compatName:"意识校准师",compatIcon:"🔮",compat:"亡灵语言学家长期与逝去的频率打交道，久而久之会对当下活着的人反而有些陌生。意识校准师是那种能把一个漂移的灵魂拉回当下的人。他们不会问你刚才感应到了什么——他们只是把手放在你肩上，让你知道你现在站在哪里，哪一侧是现实。这种踏实的在场，是亡灵语言学家最需要、也最少主动寻找的东西。"},
+  {name:"可能性收割者",icon:"🌱",desc:"在每一个决策的岔路口，那些未被选择的路会产生「可能性余热」。你收集这种余热，将其储存提炼，卖给那些梦想家和赌徒。你是可能性本身的供应商，生意从未冷清过。没有人知道这些可能性最终去了哪里——也许是另一个宇宙的早晨。",traits:["未选之路的收藏家","可能性的炼金术士","概率黑市供应商"],tags:["可能性","创造","自由","边界","探索","跨界"],compatName:"维度边境官",compatIcon:"🚪",compat:"可能性收割者热爱一切未定的、流动的、还没落地的事物，他们最怕的不是失败，而是封闭。维度边境官看起来是个守规矩的人，但他们其实比任何人都更了解边界是如何被穿越的。你不断拓展边界在哪里，他们确保你穿越边界的时候不会把两侧都炸掉。有时候你们互相抱怨，但彼此都知道，少了对方会发生什么。"},
+  {name:"情绪建筑师",icon:"🎭",desc:"你设计让人产生特定情绪的空间体验。政府用你设计和解室，医院用你设计临终病房，甚至有人请你设计一个让失恋者感到轻盈的地铁站。你的每一个项目，都是一次精准的情感手术——无痛，但改变深远。",traits:["空间情绪工程师","感受的建筑师","无声的心理治疗师"],tags:["情感","设计","影响","空间","治愈","社会"],compatName:"暗物质艺术家",compatIcon:"✨",compat:"情绪建筑师把感受变成可以进入的空间，暗物质艺术家把感受变成无法直视的震动——两种方式都在说同一件事：情绪是可以被设计和触发的。你们欣赏彼此，但合作起来经常发生分歧：一个要精准、可重复、有预期，一个要随机、不可控、令人迷失。这种拉锯让双方的作品都变得更好：情绪建筑师学会了留白，暗物质艺术家学会了落点。"},
+  {name:"维度边境官",icon:"🚪",desc:"你在现实与非现实的边界设有岗哨。每天都有迷路的梦境角色试图闯入现实，也有真实世界的人意外踏入了别处。你的工作是判断谁可以通过，谁必须被送回去，同时维持两边的平衡。偶尔你会对某个迷路者手下留情，那是你最人性的时刻。",traits:["现实边界的守门人","维度秩序执法者","迷路者的引路人"],tags:["边界","守护","秩序","跨界","平衡","幕后"],compatName:"梦境走私者",compatIcon:"🌙",compat:"维度边境官和梦境走私者从职业上看是天然的对立——一个守边界，一个专门越过边界。但正是这种对立让他们彼此迷恋。边境官在走私者身上看到了自己压抑已久的越轨冲动，走私者在边境官身上看到了自己缺乏的那种「知道自己站在哪里」的笃定。他们会争论，会互相破坏计划，但每次遇到真正危险的事，第一个打电话的还是彼此。"},
+  {name:"宇宙孤本图书管理员",icon:"📚",desc:"宇宙中每一个「存在过但已消失的事物」，在你的图书馆里都有一本档案。绝迹物种、消亡文化、未曾说出口的想法——你的图书馆馆藏宇宙中所有的失去。你一个人守护着所有曾经存在过的事物，这是最孤独也最完整的工作。",traits:["存在的最后守护人","宇宙失物招领处","孤独的全知者"],tags:["知识","记忆","孤独","守护","文明","历史"],compatName:"星际考古学家",compatIcon:"🪐",compat:"宇宙孤本图书管理员坐镇图书馆，等待遗失的事物找上门来；星际考古学家则主动出发，去宇宙各处挖掘。你们是同一件事的两种性格。考古学家带回来的遗物，需要图书管理员给它一个永久的坐标和身份；而图书馆里那些没有来历的神秘档案，又常常成为考古学家下一次出发的线索。互相补充，缺一不可，虽然一个总是在路上，一个从不出门。"},
+  {name:"自然法则审计员",icon:"⚖️",desc:"物理定律有时会出现轻微的合规偏差——光速今天慢了0.003%，引力在某城市有轻微异常。你的工作是发现这些偏差，记录成报告，提交给宇宙管理委员会。大多数时候，你的报告会被标注「在容差范围内」然后归档。你已经习惯了。",traits:["宇宙BUG审计师","物理法则的监察员","宇宙合规官"],tags:["宇宙","逻辑","秩序","科学","观察","记录"],compatName:"梦境走私者",compatIcon:"🌙",compat:"自然法则审计员最信任的是可以被测量的事物，梦境走私者则专门经营那些完全无法被测量的东西。听起来不可能，但偏偏相处得来。审计员在走私者那里第一次学到，有些东西偏离了标准不代表它是错的，也许是标准本身需要修订。走私者在审计员那里第一次感受到，被人认真、具体地看见，而不是被当成「不可解释的异常」，是多么难得的事。"},
+  {name:"神话续写人",icon:"🐉",desc:"古老神话的原版手稿只写到了人类无法理解的部分就戛然而止。你被委托续写那些空白章节——不是创作，而是用更深的直觉去解读那些神留下的空白。你每写一章，都会连续三天无法入睡，因为你总感觉有什么东西在纠正你的笔。",traits:["神话文本的接力者","集体潜意识的书记官","神明委托的创作者"],tags:["神话","创造","历史","直觉","独特","灵魂"],compatName:"历史错误修订员",compatIcon:"📖",compat:"神话续写人靠直觉和感知工作，有时候写着写着自己都不知道边界在哪里了。历史错误修订员则有一种近乎洁癖的准确性——他们永远在核实、订正、确认。两个人在一起经常会争论：一个说「我感觉应该是这样」，另一个说「但史料显示并非如此」。然而这种张力正是两者都需要的。神话需要准确的土壤才不会飘走，而历史需要神话才不至于变成冷冰冰的数字。"},
+  {name:"濒危感受保育员",icon:"🌿",desc:"现代文明正在使某些人类感受走向灭绝——对黑暗的原始敬畏，对陌生人眼神的本能共鸣，对雨前空气的集体感知。你的工作是记录、培育和传播这些濒临消失的情感物种，让它们不至于在人类进化的过程中彻底失传。",traits:["情感濒危物种守护者","感受多样性维护员","现代文明的反向工程师"],tags:["情感","保护","文明","共鸣","转化","成长"],compatName:"神话续写人",compatIcon:"🐉",compat:"濒危感受保育员守护的是那些快要被现代人忘记的感受方式，神话续写人则在续写那些感受曾经被编码进神话的古老世界。你们都深信，有些东西是不能让它消失的，哪怕整个时代都在往另一个方向走。濒危感受保育员采集的那些原始感知，常常成为神话续写人最好的灵感来源；而神话的语言，又让那些感受有了被传递下去的容器。"},
+  {name:"意识校准师",icon:"🔮",desc:"当一个人的意识开始偏移——不是精神疾病，而是某种形而上的失准——你会感知到那种微妙的频率偏差。你用一套无形的工具，帮助他们重新校准回到自己。你的客户不多，但每一个都刻骨铭心，因为你见过的是人类最深处的迷失。",traits:["灵魂校准工程师","意识频率的调音师","形而上的内科医生"],tags:["灵魂","修复","洞察","内省","治愈","直觉"],compatName:"自然法则审计员",compatIcon:"⚖️",compat:"意识校准师每天深入别人意识的深水区，久了会分不清哪些感受是自己的。自然法则审计员是那种相信「一切都有规则可循」的人，用近乎偏执的理性来理解世界，看起来有点无趣。但你们在一起会发现：他们严密的逻辑框架像一块陆地，让你在漂浮太久之后终于可以站稳。你帮他们感知到规则之外的幽微，他们帮你记得回来的路。"}
+];
+
+/* ─── STATE ─── */
+let currentQ=0;
+let answers=Array(15).fill(null).map(()=>[]);
+let currentCareer=null;
+let commentsOpen=true;
+
+const STORAGE_KEY='pworld_comments_v1';
+
+/* ─── STORAGE helpers ─── */
+function loadComments(){
+  try{
+    const raw=localStorage.getItem(STORAGE_KEY);
+    return raw?JSON.parse(raw):[];
+  }catch(e){return[];}
+}
+function saveComment(obj){
+  const list=loadComments();
+  list.unshift(obj);
+  if(list.length>80)list.splice(80);
+  try{localStorage.setItem(STORAGE_KEY,JSON.stringify(list));}catch(e){}
+}
+
+/* ─── COMMENTS UI ─── */
+function renderComments(){
+  const list=loadComments();
+  const el=document.getElementById('comment-list');
+  const badge=document.getElementById('comment-count-badge');
+  badge.textContent=list.length;
+  if(!list.length){
+    el.innerHTML='<div style="text-align:center;padding:24px 0;font-size:13px;color:rgba(100,170,130,0.4);">还没有旅行者留言…</div>';
+    return;
+  }
+  el.innerHTML=list.map(c=>`
+    <div class="comment-item slide-in">
+      <div class="comment-career-badge">${c.icon||'🌀'}</div>
+      <div>
+        <div class="comment-meta">${c.career||'未知职业'} · ${c.time||''}</div>
+        <div class="comment-text">${escapeHtml(c.text)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(t){
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleComments(){
+  commentsOpen=!commentsOpen;
+  const f=document.getElementById('comment-float');
+  const ico=document.getElementById('float-toggle-icon');
+  if(commentsOpen){
+    f.classList.remove('collapsed');
+    ico.textContent='✕';
+    document.getElementById('comment-bubble').classList.add('hidden');
+  }else{
+    f.classList.add('collapsed');
+    ico.textContent='✦';
+    document.getElementById('comment-bubble').classList.remove('hidden');
+  }
+}
+
+function showCommentPanel(){
+  const f=document.getElementById('comment-float');
+  const bubble=document.getElementById('comment-bubble');
+  f.classList.remove('collapsed');
+  bubble.classList.add('hidden');
+  commentsOpen=true;
+  document.getElementById('float-toggle-icon').textContent='✕';
+  renderComments();
+}
+
+/* ─── CALC RESULT ─── */
+function calcResult(){
+  const map={};
+  answers.forEach(sel=>sel.forEach(t=>{map[t]=(map[t]||0)+1;}));
+  let best=null,bestScore=-1;
+  careers.forEach(c=>{
+    const s=c.tags.reduce((acc,t)=>acc+(map[t]||0),0);
+    if(s>bestScore){bestScore=s;best=c;}
+  });
+  return best||careers[Math.floor(Math.random()*careers.length)];
+}
+
+/* ─── FLOW ─── */
+function startTest(){
+  answers=Array(15).fill(null).map(()=>[]);
+  currentQ=0;
+  switchScreen('screen-quiz');
+  showQ(0);
+}
+
+function switchScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id);
+  el.classList.add('active');
+  el.classList.remove('fade-in');
+  void el.offsetWidth;
+  el.classList.add('fade-in');
+}
+
+function showQ(idx){
+  const q=questions[idx];
+  document.getElementById('q-num').textContent=`问题 ${String(idx+1).padStart(2,'0')}`;
+  document.getElementById('q-text').textContent=q.text;
+  document.getElementById('q-hint').textContent=q.hint;
+  document.getElementById('q-count').textContent=`${idx+1} / 15`;
+  document.getElementById('progress-fill').style.width=`${((idx+1)/15)*100}%`;
+
+  const grid=document.getElementById('options-grid');
+  grid.innerHTML='';
+  q.options.forEach((opt,i)=>{
+    const sel=answers[idx].includes(opt.tags[0]);
+    const btn=document.createElement('button');
+    btn.className='option-btn'+(sel?' selected':'');
+    btn.innerHTML=`<div class="opt-check"><svg class="check-svg" width="12" height="12" viewBox="0 0 12 12" fill="none"><polyline points="2,6.5 5,9.5 10,3" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><span>${opt.text}</span>`;
+    btn.onclick=()=>toggleOpt(idx,i,btn,q.multi);
+    grid.appendChild(btn);
+  });
+
+  updateNext(idx);
+  document.getElementById('btn-prev').style.visibility=idx===0?'hidden':'visible';
+
+  const card=document.getElementById('q-card');
+  card.classList.remove('fade-in');
+  void card.offsetWidth;
+  card.classList.add('fade-in');
+}
+
+function toggleOpt(qIdx,optIdx,btn,multi){
+  const tags=questions[qIdx].options[optIdx].tags;
+  const key=tags[0];
+  const alreadySel=answers[qIdx].includes(key);
+  if(!multi){
+    answers[qIdx]=[];
+    document.querySelectorAll('.option-btn').forEach(b=>b.classList.remove('selected'));
+  }
+  if(alreadySel){
+    answers[qIdx]=answers[qIdx].filter(t=>!tags.includes(t));
+    btn.classList.remove('selected');
+  }else{
+    answers[qIdx].push(...tags);
+    btn.classList.add('selected');
+  }
+  updateNext(qIdx);
+}
+
+function updateNext(idx){
+  const btn=document.getElementById('btn-next');
+  btn.disabled=answers[idx].length===0;
+  btn.textContent=idx===14?'完成测试 →':'下一题 →';
+}
+
+function nextQ(){
+  if(answers[currentQ].length===0)return;
+  if(currentQ===14){
+    switchScreen('screen-dream');
+    return;
+  }
+  currentQ++;
+  showQ(currentQ);
+}
+
+function prevQ(){
+  if(currentQ===0)return;
+  currentQ--;
+  showQ(currentQ);
+}
+
+function goBackToDream(){
+  currentQ=14;
+  switchScreen('screen-quiz');
+  showQ(14);
+}
+
+/* Dream textarea counter */
+document.addEventListener('DOMContentLoaded',()=>{
+  const ta=document.getElementById('dream-input');
+  const counter=document.getElementById('dream-counter');
+  if(ta)ta.addEventListener('input',()=>{counter.textContent=`${ta.value.length} / 120`;});
+  initParticles();
+  renderComments();
+});
+
+function submitDreamAndResult(){
+  const dreamText=document.getElementById('dream-input').value.trim();
+  currentCareer=calcResult();
+
+  // Show result
+  switchScreen('screen-result');
+  renderResult(currentCareer);
+
+  // Save comment if any text
+  if(dreamText){
+    const now=new Date();
+    const timeStr=`${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    saveComment({career:currentCareer.name,icon:currentCareer.icon,text:dreamText,time:timeStr});
+    renderComments();
+  }
+
+  // Show comment panel
+  setTimeout(()=>{showCommentPanel();},800);
+}
+
+function renderResult(career){
+  document.getElementById('r-icon').textContent=career.icon;
+  document.getElementById('r-name').textContent=career.name;
+  document.getElementById('r-desc').textContent=career.desc;
+  const d=new Date();
+  document.getElementById('r-date').textContent=`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}.${String(d.getDate()).padStart(2,'0')}`;
+
+  const traitsEl=document.getElementById('r-traits');
+  traitsEl.innerHTML='';
+  career.traits.forEach(t=>{
+    const span=document.createElement('span');
+    span.className='trait-tag';
+    span.textContent=t;
+    traitsEl.appendChild(span);
+  });
+
+  // Compat block
+  document.getElementById('r-compat-icon').textContent=career.compatIcon||'✦';
+  document.getElementById('r-compat-name').textContent=career.compatName||'';
+  document.getElementById('r-compat-text').textContent=career.compat||'';
+
+  // Save panel preview
+  document.getElementById('save-icon').textContent=career.icon;
+  document.getElementById('save-name').textContent=career.name;
+  document.getElementById('share-text').textContent=
+    `我在平行世界的职业是「${career.name}」${career.icon}，灵魂互补是「${career.compatName}」${career.compatIcon}。你的呢？`;
+}
+
+function resetTest(){
+  switchScreen('screen-intro');
+  document.getElementById('dream-input').value='';
+  document.getElementById('dream-counter').textContent='0 / 120';
+  answers=Array(15).fill(null).map(()=>[]);
+  currentQ=0;
+  currentCareer=null;
+}
+
+/* ─── SAVE / SHARE ─── */
+function openSavePanel(){
+  document.getElementById('save-overlay').classList.add('active');
+}
+function closeSavePanel(){
+  document.getElementById('save-overlay').classList.remove('active');
+}
+function closeSaveOverlayOutside(e){
+  if(e.target===document.getElementById('save-overlay'))closeSavePanel();
+}
+
+function doSaveImage(){
+  const el=document.getElementById('result-card-capture');
+  html2canvas(el,{
+    backgroundColor:'#0b1f12',
+    scale:2,
+    useCORS:true,
+    logging:false
+  }).then(canvas=>{
+    const link=document.createElement('a');
+    link.download=`平行世界职业_${currentCareer?currentCareer.name:'档案'}.png`;
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }).catch(()=>{
+    showToast('生成图片失败，请截图保存');
+  });
+}
+
+function copyLink(){
+  const url=window.location.href.split('?')[0];
+  navigator.clipboard.writeText(url).then(()=>{
+    showToast('已复制链接 ✓');
+  }).catch(()=>{
+    const ta=document.createElement('textarea');
+    ta.value=url;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('已复制链接 ✓');
+  });
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ─── PARTICLES ─── */
+function initParticles(){
+  const wrap=document.getElementById('particles');
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div');
+    p.className='particle';
+    const size=Math.random()*2.5+0.8;
+    p.style.cssText=`left:${Math.random()*100}%;width:${size}px;height:${size}px;animation-duration:${Math.random()*14+9}s;animation-delay:${Math.random()*14}s;opacity:${Math.random()*0.5+0.12}`;
+    wrap.appendChild(p);
+  }
+}
+</script>
+</body>
+</html>
